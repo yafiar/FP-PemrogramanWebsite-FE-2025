@@ -16,6 +16,7 @@ type Tile = {
   color: string; // tailwind color class
   justRemoved?: boolean;
   justRestored?: boolean;
+  justUnflipped?: boolean;
   animMove?: boolean;
   dx?: string; // translateX
   dy?: string; // translateY
@@ -198,8 +199,20 @@ export default function FlipTiles() {
 
   const flipTile = (tileId: string) => {
     setTiles((prev) =>
-      prev.map((t) => (t.id === tileId ? { ...t, flipped: !t.flipped } : t)),
+      prev.map((t) => {
+        if (t.id !== tileId) return t;
+        if (t.flipped) {
+          return { ...t, flipped: false, justUnflipped: true };
+        }
+        return { ...t, flipped: true, justUnflipped: false };
+      }),
     );
+    // clear the one-shot unflip flag
+    setTimeout(() => {
+      setTiles((prev) =>
+        prev.map((t) => (t.id === tileId ? { ...t, justUnflipped: false } : t)),
+      );
+    }, 400);
     setZoomedTile(null);
   };
 
@@ -397,7 +410,7 @@ export default function FlipTiles() {
                   style={{ height: tileHeight }}
                 >
                   <div
-                    className={`w-full h-full rounded-md flex items-center justify-center font-semibold tracking-wide text-white shadow-inner transition-transform duration-500 will-change-transform ${tile.flipped ? "bg-slate-900 animate-tile-flip" : tile.color}`}
+                    className={`w-full h-full rounded-md flex items-center justify-center font-semibold tracking-wide text-white shadow-inner transition-transform duration-500 will-change-transform ${tile.flipped ? "bg-slate-900 animate-tile-flip" : tile.color} ${tile.justUnflipped ? "animate-tile-unflip" : ""}`}
                     style={{
                       fontSize: `clamp(0.7rem, ${tileHeight / 110}rem, 1rem)`,
                     }}
