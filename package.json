@@ -1,8 +1,20 @@
 {
-  "name": "npm",
-  "private": true,
+  "name": "install",
   "version": "0.0.0",
+  "private": true,
+  "description": "This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.",
+  "homepage": "https://github.com/yafiar/FP-PemrogramanWebsite-FE-2025#readme",
+  "bugs": {
+    "url": "https://github.com/yafiar/FP-PemrogramanWebsite-FE-2025/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yafiar/FP-PemrogramanWebsite-FE-2025.git"
+  },
+  "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "eslint.config.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,12 +23,6 @@
     "prettier:write": "prettier --write .",
     "preview": "vite preview",
     "prepare": "husky"
-  },
-  "lint-staged": {
-    "src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ]
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -60,8 +66,10 @@
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react-dom": "^2.3.9",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",
+    "eslint-plugin-react-x": "^2.3.9",
     "globals": "^16.4.0",
     "husky": "^9.1.7",
     "prettier": "^3.6.2",
@@ -69,5 +77,11 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.3",
     "vite": "^7.1.7"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   }
 }

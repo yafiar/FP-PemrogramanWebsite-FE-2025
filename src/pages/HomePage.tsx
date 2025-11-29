@@ -33,12 +33,13 @@ type GameTemplate = {
   is_life_based: boolean;
 };
 
+type GameTemplateValue = string | { id?: string; slug?: string; name?: string };
 type Game = {
   id: string;
   name: string;
   description: string;
   thumbnail_image: string | null;
-  game_template: string;
+  game_template: GameTemplateValue; // backend may return slug string or object
   total_liked: number;
   total_played: number;
   creator_id: string;
@@ -183,8 +184,18 @@ export default function HomePage() {
   };
 
   const GameCard = ({ game }: { game: Game }) => {
+    const templateSlug =
+      typeof game.game_template === "string"
+        ? game.game_template
+        : (game.game_template?.slug ?? "");
+    const playRoute =
+      templateSlug === "flip-tiles"
+        ? `/flip-tiles/play/${game.id}`
+        : `/quiz/play/${game.id}`;
+    const displayTemplate =
+      templateSlug === "flip-tiles" ? "Flip Tiles" : "Quiz";
     const handlePlayGame = () => {
-      window.location.href = `/quiz/play/${game.id}`;
+      window.location.href = playRoute;
     };
 
     return (
@@ -213,7 +224,7 @@ export default function HomePage() {
               {game.name}
             </Typography>
             <Badge variant="secondary" className="shrink-0">
-              Quiz
+              {displayTemplate}
             </Badge>
           </div>
 
