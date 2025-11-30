@@ -79,24 +79,26 @@ function Quiz() {
   const questions = quiz.questions;
   const isLastQuestion = currentQuestion === questions.length - 1;
   const isFirstQuestion = currentQuestion === 0;
-  const progress = ((currentQuestion + 1) / questions.length) * 100;
+  const progress = (currentQuestion / questions.length) * 100;
 
   const handleNext = () => {
     if (selectedAnswer === null) return;
 
-    setUserAnswers((prev) => [
-      ...prev,
+    const updatedAnswers = [
+      ...userAnswers,
       {
         question_index: questions[currentQuestion].question_index,
         selected_answer_index: selectedAnswer,
       },
-    ]);
+    ];
+
+    setUserAnswers(updatedAnswers);
 
     if (!isLastQuestion) {
       setCurrentQuestion((prev) => prev + 1);
       setSelectedAnswer(null);
     } else {
-      submitQuiz();
+      submitQuiz(updatedAnswers);
     }
   };
 
@@ -111,12 +113,12 @@ function Quiz() {
     }
   };
 
-  const submitQuiz = async () => {
+  const submitQuiz = async (finalAnswers?: typeof userAnswers) => {
     try {
       setLoading(true);
 
       const response = await api.post(`/api/game/game-type/quiz/${id}/check`, {
-        answers: userAnswers,
+        answers: finalAnswers ?? userAnswers,
       });
 
       setResult(response.data.data);
