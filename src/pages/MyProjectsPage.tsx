@@ -57,12 +57,15 @@ export default function MyProjectsPage() {
     fetchProjects();
   }, []);
 
+  const toSlug = (val: string) => val.trim().toLowerCase().replace(/\s+/g, "-");
+
   const handleDeleteProject = async (
     projectId: string,
     gameTemplate: string,
   ) => {
     try {
-      await api.delete(`/api/game/game-type/${gameTemplate}/${projectId}`);
+      const template = toSlug(gameTemplate);
+      await api.delete(`/api/game/game-type/${template}/${projectId}`);
       setProjects((prev) => prev.filter((p) => p.id !== projectId));
       toast.success("Project deleted successfully!");
     } catch (err) {
@@ -79,8 +82,8 @@ export default function MyProjectsPage() {
     try {
       const form = new FormData();
       form.append("is_published", String(isPublish));
-
-      await api.put(`/api/game/game-type/${gameTemplate}/${gameId}`, form);
+      const template = toSlug(gameTemplate);
+      await api.put(`/api/game/game-type/${template}/${gameId}`, form);
 
       setProjects((prev) =>
         prev.map((p) =>
@@ -98,14 +101,16 @@ export default function MyProjectsPage() {
   };
 
   const getEditRoute = (gameTemplate: string, gameId: string) => {
-    if (gameTemplate === "flip-tiles") {
+    const template = toSlug(gameTemplate);
+    if (template === "flip-tiles") {
       return `/flip-tiles/edit/${gameId}`;
     }
     return `/quiz/edit/${gameId}`;
   };
 
   const getPlayRoute = (gameTemplate: string, gameId: string) => {
-    if (gameTemplate === "flip-tiles") {
+    const template = toSlug(gameTemplate);
+    if (template === "flip-tiles") {
       return `/flip-tiles/play/${gameId}`;
     }
     return `/quiz/play/${gameId}`;

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import api from "@/api/axios";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useNavigate } from "react-router-dom";
 import { User, ChevronDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ type Game = {
 };
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const token = useAuthStore((state) => state.token);
   const user = useAuthStore((state) => state.user);
   const isAuthenticated = !!(token && user);
@@ -184,9 +186,11 @@ export default function HomePage() {
   };
 
   const GameCard = ({ game }: { game: Game }) => {
+    const toSlug = (val: string) =>
+      val.trim().toLowerCase().replace(/\s+/g, "-");
     const templateSlug =
       typeof game.game_template === "string"
-        ? game.game_template
+        ? toSlug(game.game_template)
         : (game.game_template?.slug ?? "");
     const playRoute =
       templateSlug === "flip-tiles"
@@ -195,7 +199,7 @@ export default function HomePage() {
     const displayTemplate =
       templateSlug === "flip-tiles" ? "Flip Tiles" : "Quiz";
     const handlePlayGame = () => {
-      window.location.href = playRoute;
+      navigate(playRoute);
     };
 
     return (
