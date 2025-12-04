@@ -44,13 +44,6 @@ function EditFlipTiles() {
         const response = await api.get(`/api/game/game-type/flip-tiles/${id}`);
         const game = response.data.data;
 
-        // Check ownership
-        if (game.creator_id !== user?.id) {
-          toast.error("You don't have permission to edit this game");
-          navigate("/my-projects");
-          return;
-        }
-
         setTitle(game.name);
         setDescription(game.description || "");
         setExistingThumbnail(game.thumbnail_image || "");
@@ -67,7 +60,8 @@ function EditFlipTiles() {
         }
       } catch (error: unknown) {
         console.error("Fetch error:", error);
-        toast.error("Failed to load game");
+        // Backend handles authorization, frontend receives 403 if unauthorized
+        toast.error("Failed to load game or you don't have permission");
         navigate("/my-projects");
       } finally {
         setLoading(false);
@@ -131,7 +125,7 @@ function EditFlipTiles() {
       };
       formData.append("game_json", JSON.stringify(gameJson));
 
-      await api.put(`/api/game/game-type/flip-tiles/${id}`, formData, {
+      await api.patch(`/api/game/game-type/flip-tiles/${id}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 

@@ -64,16 +64,10 @@ export default function FlipTiles() {
     const fetchGame = async () => {
       try {
         setLoading(true);
-        let gameResponse;
-        try {
-          // Try public endpoint first (if backend supports it)
-          gameResponse = await api.get(
-            `/api/game/game-type/flip-tiles/${id}/play/public`,
-          );
-        } catch {
-          // Fallback to protected detail endpoint
-          gameResponse = await api.get(`/api/game/game-type/flip-tiles/${id}`);
-        }
+        // Try to fetch game detail (auth required for now)
+        const gameResponse = await api.get(
+          `/api/game/game-type/flip-tiles/${id}`,
+        );
         const game = gameResponse.data.data;
         setGameData(game);
 
