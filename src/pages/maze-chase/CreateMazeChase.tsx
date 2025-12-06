@@ -13,7 +13,7 @@ import Dropzone from "@/components/ui/dropzone";
 import { Typography } from "@/components/ui/typography";
 import { ArrowLeft, Plus, SaveIcon, Trash2, X, ChevronDown, Sparkles, Search } from "lucide-react";
 import { useCreateMazeChase } from "@/api/maze-chase/useCreateMazeChase";
-import { AVAILABLE_MAPS } from "@/constants/maps";
+import { AVAILABLE_MAPS } from "@/assets/maze-chase/maps";
 import backgroundImage from "@/assets/maze-chase/backgroundcreate.jpg";
 import {
   AlertDialog,
@@ -34,7 +34,6 @@ interface Answer {
 
 interface Question {
   questionText: string;
-  questionImages: File | null;
   answers: Answer[];
 }
 
@@ -50,7 +49,6 @@ function CreateMazeChase() {
   const [questions, setQuestions] = useState<Question[]>([
     {
       questionText: "",
-      questionImages: null,
       answers: [
         { text: "", isCorrect: false },
         { text: "", isCorrect: false },
@@ -75,7 +73,6 @@ function CreateMazeChase() {
       ...prev,
       {
         questionText: "",
-        questionImages: null,
         answers: [
           { text: "", isCorrect: false },
           { text: "", isCorrect: false },
@@ -458,16 +455,7 @@ function CreateMazeChase() {
                   )}
                 </div>
 
-                <Dropzone
-                  label="Question Image (Optional)"
-                  allowedTypes={["image/png", "image/jpeg"]}
-                  maxSize={2 * 1024 * 1024}
-                  onChange={(file) => {
-                    const newQuestions = [...questions];
-                    newQuestions[qIndex].questionImages = file;
-                    setQuestions(newQuestions);
-                  }}
-                />
+
 
                 <div className="space-y-4 bg-black/40 p-6 rounded-2xl border border-gray-700/30">
                   <Label className="text-gray-400 font-medium flex items-center gap-2">

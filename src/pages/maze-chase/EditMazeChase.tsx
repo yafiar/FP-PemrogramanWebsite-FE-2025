@@ -12,7 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import Dropzone from "@/components/ui/dropzone";
 import { Typography } from "@/components/ui/typography";
 import { ArrowLeft, Plus, SaveIcon, Trash2, X, ChevronDown, Sparkles } from "lucide-react";
-import { AVAILABLE_MAPS } from "@/constants/maps";
+import { AVAILABLE_MAPS } from "@/assets/maze-chase/maps";
 import backgroundImage from "@/assets/maze-chase/backgroundcreate.jpg";
 import {
   AlertDialog,
@@ -26,7 +26,7 @@ import {
   AlertDialogCancel,
 } from "@/components/ui/alert-dialog";
 
-// --- Type Definitions (Identical to Logic) ---
+// --- Type Definitions ---
 interface Answer {
   text: string;
   isCorrect: boolean;
@@ -67,8 +67,6 @@ function EditMazeChase() {
   // --- State Management ---
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState<boolean>(true);
-  
-  // UI State
   const [showMapDropdown, setShowMapDropdown] = useState(false);
 
   // Data State
@@ -92,7 +90,7 @@ function EditMazeChase() {
     countdownMinutes: 5,
   });
 
-  // --- Fetch Data Logic (Edit Specific) ---
+  // --- Fetch Data Logic ---
   useEffect(() => {
     if (!id) return setLoading(false);
 
@@ -163,10 +161,9 @@ function EditMazeChase() {
   }, [id]);
 
   // --- Logic Functions ---
-
   const addQuestion = () => {
     if (questions.length >= 10) {
-      toast.error("Maximum 10 Question allowed");
+      toast.error("Maximum 10 questions allowed");
       return;
     }
     setQuestions((prev) => [
@@ -181,8 +178,8 @@ function EditMazeChase() {
 
   const removeQuestion = (index: number) => {
     if (questions.length <= 1) {
-       toast.error("Minimum 1 question required");
-       return;
+      toast.error("Minimum 1 question required");
+      return;
     }
     setQuestions((prev) => prev.filter((_, i) => i !== index));
   };
@@ -232,7 +229,7 @@ function EditMazeChase() {
     };
 
     try {
-      localStorage.setItem("mazeChase_draft", JSON.stringify(draftData));
+      localStorage.setItem("mazeChase_draft_edit", JSON.stringify(draftData));
       toast.success("Draft saved successfully!");
     } catch (err) {
       console.error("Failed to save draft:", err);
@@ -240,7 +237,7 @@ function EditMazeChase() {
     }
   };
 
-  // --- Submit Handler (UPDATE/PATCH) ---
+  // --- Submit Handler ---
   const handleSubmit = async () => {
     if (!thumbnail && !thumbnailPreview) {
       setFormErrors((prev) => ({ ...prev, thumbnail: "Thumbnail is required" }));
@@ -251,7 +248,6 @@ function EditMazeChase() {
       return toast.error("Map ID is required");
     }
 
-    // Validation Logic
     const validationPayload = {
       title,
       description,
@@ -268,7 +264,6 @@ function EditMazeChase() {
       settings,
     };
 
-    // Conditional schema if thumbnail exists as URL
     let schemaToUse: z.ZodTypeAny = mazeChaseSchema;
     if (!thumbnail && thumbnailPreview) {
       schemaToUse = mazeChaseSchema.extend({
@@ -289,7 +284,6 @@ function EditMazeChase() {
       return;
     }
 
-    // Prepare FormData
     const formData = new FormData();
     formData.append("name", title);
     if (description) formData.append("description", description);
@@ -358,334 +352,429 @@ function EditMazeChase() {
         className="w-full h-screen flex justify-center items-center bg-cover bg-fixed bg-center"
         style={{ backgroundImage: `url(${backgroundImage})` }}
       >
-        <div className="backdrop-blur-md bg-[#899a95]/80 p-8 rounded-2xl shadow-2xl flex flex-col items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#3f4441] border-t-[#c9a961]"></div>
-            <p className="mt-4 font-gothic text-xl text-[#3f4441]">Loading Labyrinth...</p>
+        <div className="backdrop-blur-2xl bg-black/60 p-8 rounded-2xl shadow-2xl flex flex-col items-center border border-gray-700/50">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-[#c9a961]"></div>
+          <p className="mt-4 font-gothic text-xl text-[#c9a961]">Loading Labyrinth...</p>
         </div>
       </div>
     );
   }
 
-  // --- Render (Strict Style Implementation) ---
   return (
     <div 
-      className="w-full min-h-screen bg-cover bg-fixed bg-center relative"
+      className="w-full min-h-screen bg-cover bg-fixed bg-center text-gray-300 relative"
       style={{
         backgroundImage: `url(${backgroundImage})`,
       }}
     >
-      {/* Font Injection */}
+      {/* Import Gothic Font */}
       <style>
         {`
-          @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=UnifrakturMaguntia&family=Inter:wght@300;400;500;600;700&display=swap');
-          .font-gothic { font-family: 'Pirata One', cursive; letter-spacing: 0.05em; }
-          .font-body { font-family: 'Inter', sans-serif; }
+          @import url('https://fonts.googleapis.com/css2?family=Pirata+One&family=UnifrakturMaguntia&family=Grenze+Gotisch:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+          
+          .font-gothic {
+            font-family: 'Pirata One', cursive;
+            letter-spacing: 0.05em;
+          }
+          
+          .font-body {
+            font-family: 'Inter', sans-serif;
+          }
         `}
       </style>
 
-      {/* Dark Overlay for Readability of background */}
-      <div className="fixed inset-0 bg-black/40 z-0" />
+      {/* Dark Overlay */}
+      <div className="fixed inset-0 bg-black/40 z-[-1]" />
 
-      {/* Navbar - Gothic Style */}
-      <nav className="backdrop-blur-md bg-black/50 border-b border-[#899a95]/30 sticky top-0 z-50">
+      {/* Navbar Gothic */}
+      <nav className="backdrop-blur-md bg-black/30 border-b border-gray-700/30 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <h1 className="font-gothic text-3xl text-[#c9a961] tracking-wider">
               Maze Chase
             </h1>
-            <button 
-              onClick={() => navigate("/my-projects")}
-              className="font-body text-gray-300 hover:text-[#c9a961] transition-colors duration-300 text-sm flex items-center"
-            >
-              <ArrowLeft className="inline mr-2" size={16} />
-              Back to Projects
-            </button>
+            <div className="flex items-center gap-8">
+              <button 
+                onClick={() => navigate("/my-projects")}
+                className="font-body text-gray-400 hover:text-[#c9a961] transition-colors duration-300 text-sm"
+              >
+                <ArrowLeft className="inline mr-2" size={16} />
+                Back to Projects
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <div className="w-full py-12 px-4 md:px-8 flex justify-center font-body relative z-10">
-        <div className="max-w-4xl w-full space-y-8">
-            
-            {/* Header Outside Form */}
-            <div className="text-center">
-                <h1 className="font-gothic text-5xl md:text-6xl text-[#c9a961] tracking-wider mb-2 drop-shadow-md">
-                   Edit Your Maze
-                </h1>
-                <p className="text-gray-300 text-lg">
-                   Modify the paths and secrets of your existing labyrinth
-                </p>
+      <div className="w-full py-12 px-4 md:px-8 flex justify-center font-body">
+        <div className="max-w-5xl w-full">
+          {/* Hero Card */}
+          <div className="backdrop-blur-2xl bg-black/60 rounded-3xl border border-gray-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] p-10 md:p-14 mb-8">
+            <div className="text-center space-y-6">
+              <h1 className="font-gothic text-5xl md:text-7xl text-[#c9a961] tracking-wider mb-4">
+                Edit Your Maze
+              </h1>
+              <p className="text-gray-400 text-lg md:text-xl leading-relaxed max-w-3xl mx-auto">
+                Modify the challenges and pathways of your existing labyrinth
+              </p>
             </div>
+          </div>
 
-            {/* --- FORM CONTAINER (Strict Sage Grey Style) --- */}
-            <div className="bg-[#899a95] rounded-2xl shadow-2xl p-8 md:p-10 border border-[#7a8b86]">
-                
-                {/* Section: Game Configuration */}
-                <div className="space-y-8">
-                    <h2 className="font-gothic text-3xl text-[#3f4441] mb-6 border-b border-[#3f4441]/20 pb-2">
-                        Game Configuration
-                    </h2>
+          {/* Form Section */}
+          <div className="backdrop-blur-2xl bg-black/60 rounded-3xl border border-gray-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] p-10 md:p-14 space-y-10">
+            <div>
+              <h2 className="font-gothic text-3xl text-[#c9a961] mb-8 tracking-wide">
+                Game Configuration
+              </h2>
+              
+              <div className="space-y-8">
+                <div className="space-y-3">
+                  <Label className="text-gray-400 font-medium text-base">
+                    Game Title <span className="text-[#c9a961]">*</span>
+                  </Label>
+                  <Input
+                    placeholder="Enter the name of your mysterious maze..."
+                    className="bg-black/70 border-gray-700/50 text-gray-300 rounded-xl px-4 py-4 placeholder:text-gray-600 focus:border-[#c9a961]/50 transition-all"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                  {formErrors["title"] && (
+                    <p className="text-red-400 text-sm flex items-center gap-1">
+                      <span>⚠</span> {formErrors["title"]}
+                    </p>
+                  )}
+                </div>
 
-                    {/* Title Input */}
-                    <div className="space-y-3">
-                        <Label className="text-[#3f4441] font-bold text-base">
-                            Game Title <span className="text-red-700">*</span>
-                        </Label>
-                        <Input
-                            placeholder="Enter maze title..."
-                            className="bg-[#f0f2f1] border-[#6b7c77] text-[#3f4441] placeholder:text-[#3f4441]/50 focus:border-[#c9a961] focus:ring-1 focus:ring-[#c9a961] rounded-xl px-4 py-6 text-lg shadow-inner"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
-                        {formErrors["title"] && <p className="text-red-800 text-sm font-medium">⚠ {formErrors["title"]}</p>}
-                    </div>
+                <div className="space-y-3">
+                  <Label className="text-gray-400 font-medium text-base">
+                    Description <span className="text-[#c9a961]">*</span>
+                  </Label>
+                  <textarea
+                    placeholder="Describe the dark secrets and challenges within..."
+                    className="w-full bg-black/70 border border-gray-700/50 text-gray-300 rounded-xl px-4 py-4 placeholder:text-gray-600 focus:border-[#c9a961]/50 transition-all resize-none"
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                  {formErrors["description"] && (
+                    <p className="text-red-400 text-sm flex items-center gap-1">
+                      <span>⚠</span> {formErrors["description"]}
+                    </p>
+                  )}
+                </div>
 
-                    {/* Description Input */}
-                    <div className="space-y-3">
-                        <Label className="text-[#3f4441] font-bold text-base">
-                            Description
-                        </Label>
-                        <textarea
-                            placeholder="Describe the challenges..."
-                            className="w-full bg-[#f0f2f1] border-[#6b7c77] text-[#3f4441] placeholder:text-[#3f4441]/50 focus:border-[#c9a961] focus:ring-1 focus:ring-[#c9a961] rounded-xl px-4 py-4 resize-none shadow-inner"
-                            rows={4}
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
-                         {formErrors["description"] && <p className="text-red-800 text-sm font-medium">⚠ {formErrors["description"]}</p>}
-                    </div>
+                <div className="space-y-3">
+                  <Label className="text-gray-400 font-medium text-base">
+                    Select Maze Map <span className="text-[#c9a961]">*</span>
+                  </Label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setShowMapDropdown(!showMapDropdown)}
+                      className="w-full flex items-center justify-between px-4 py-4 bg-black/70 border border-gray-700/50 rounded-xl hover:border-[#c9a961]/50 transition-all text-gray-300"
+                    >
+                      <span>
+                        {mapId
+                          ? AVAILABLE_MAPS.find((m) => m.id === mapId)?.name || "Select a map"
+                          : "Choose your labyrinth..."}
+                      </span>
+                      <ChevronDown 
+                        size={20} 
+                        className={`text-[#c9a961] transition-transform duration-300 ${showMapDropdown ? 'rotate-180' : ''}`} 
+                      />
+                    </button>
 
-                    {/* Map Selection */}
-                    <div className="space-y-3">
-                         <Label className="text-[#3f4441] font-bold text-base">
-                            Select Map <span className="text-red-700">*</span>
-                        </Label>
-                        <div className="relative">
+                    {showMapDropdown && (
+                      <div className="absolute top-full left-0 right-0 mt-2 backdrop-blur-2xl bg-black/80 border border-gray-700/50 rounded-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.9)] z-20 overflow-hidden">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 p-5">
+                          {AVAILABLE_MAPS.map((map) => (
                             <button
-                                type="button"
-                                onClick={() => setShowMapDropdown(!showMapDropdown)}
-                                className="w-full flex items-center justify-between px-4 py-4 bg-[#f0f2f1] border border-[#6b7c77] rounded-xl text-[#3f4441] hover:border-[#c9a961] transition-all shadow-sm"
+                              key={map.id}
+                              type="button"
+                              onClick={() => {
+                                setMapId(map.id);
+                                setShowMapDropdown(false);
+                              }}
+                              className={`group overflow-hidden rounded-xl border-2 transition-all duration-300 transform hover:scale-105 ${
+                                mapId === map.id
+                                  ? "border-[#c9a961] shadow-lg ring-2 ring-[#c9a961]/30"
+                                  : "border-gray-700/50 hover:border-[#c9a961]/60 hover:shadow-lg"
+                              }`}
                             >
-                                <span className="font-medium">
-                                    {mapId ? AVAILABLE_MAPS.find((m) => m.id === mapId)?.name : "Select a map..."}
-                                </span>
-                                <ChevronDown size={20} className={`text-[#3f4441] transition-transform ${showMapDropdown ? 'rotate-180' : ''}`} />
-                            </button>
-
-                            {showMapDropdown && (
-                                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-200 z-20 p-4 grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    {AVAILABLE_MAPS.map((map) => (
-                                        <button
-                                            key={map.id}
-                                            type="button"
-                                            onClick={() => {
-                                                setMapId(map.id);
-                                                setShowMapDropdown(false);
-                                            }}
-                                            className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
-                                                mapId === map.id ? "border-[#c9a961] ring-2 ring-[#c9a961]/30" : "border-gray-200 hover:border-[#c9a961]"
-                                            }`}
-                                        >
-                                            <img src={map.image} alt={map.name} className="w-full h-24 object-cover" />
-                                            <div className={`p-2 text-xs font-bold text-center ${mapId === map.id ? "bg-[#c9a961] text-white" : "bg-gray-100 text-gray-700"}`}>
-                                                {map.name}
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Thumbnail Dropzone */}
-                    <div className="space-y-3">
-                        <Label className="text-[#3f4441] font-bold text-base">Thumbnail</Label>
-                        <div className="bg-[#f0f2f1]/50 p-2 rounded-xl border border-[#6b7c77] border-dashed">
-                             <Dropzone
-                                required
-                                defaultValue={thumbnailPreview ?? undefined}
-                                label="Upload Game Thumbnail"
-                                allowedTypes={["image/png", "image/jpeg"]}
-                                maxSize={2 * 1024 * 1024}
-                                onChange={handleThumbnailChange}
-                            />
-                        </div>
-                    </div>
-                </div>
-
-                <hr className="my-8 border-[#3f4441]/20" />
-
-                {/* Section: Challenges */}
-                <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                         <div>
-                           <h2 className="font-gothic text-3xl text-[#3f4441]">Challenges</h2>
-                           <p className="text-gray-600 text-sm mt-1">Maximum 10 question ({questions.length}/10)</p>
-                         </div>
-                         <Button 
-                            onClick={addQuestion}
-                            disabled={questions.length >= 10}
-                            className="bg-[#3f4441] hover:bg-[#2a2e2c] text-white font-semibold rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
-                         >
-                            <Plus size={18} className="mr-2" /> Add Question
-                         </Button>
-                    </div>
-
-                    {questions.map((q, qIndex) => (
-                        <div key={qIndex} className="bg-[#f0f2f1] rounded-xl p-6 shadow-md border border-[#d1d6d4] space-y-5 relative">
-                             {/* Question Header */}
-                             <div className="flex justify-between items-start">
-                                <div className="bg-[#3f4441] text-white px-3 py-1 rounded-lg font-bold text-sm">
-                                    Q{qIndex + 1}
-                                </div>
-                                <button 
-                                    onClick={() => removeQuestion(qIndex)}
-                                    disabled={questions.length === 1}
-                                    className={`p-2 rounded-full transition-colors ${questions.length === 1 ? 'text-gray-400 cursor-not-allowed' : 'text-red-600 hover:bg-red-100'}`}
-                                >
-                                    <Trash2 size={18} />
-                                </button>
-                             </div>
-
-                             {/* Question Text */}
-                             <div className="space-y-2">
-                                <Label className="text-[#3f4441] font-semibold">Question Text</Label>
-                                <textarea
-                                    value={q.questionText}
-                                    onChange={(e) => handleQuestionTextChange(qIndex, e.target.value)}
-                                    className="w-full bg-white border border-gray-300 rounded-lg px-3 py-2 text-[#3f4441] focus:border-[#c9a961] focus:ring-1 focus:ring-[#c9a961]"
-                                    rows={2}
-                                    placeholder="Enter question..."
+                              <div className="relative overflow-hidden">
+                                <img
+                                  src={map.image}
+                                  alt={map.name}
+                                  className="w-full h-32 object-cover transition-transform duration-300 group-hover:scale-110 opacity-80"
                                 />
-                             </div>
-
-                             {/* Question Image */}
-                             <div className="space-y-2">
-                                <Label className="text-[#3f4441] font-semibold">Image (Optional)</Label>
-                                <Dropzone
-                                    defaultValue={typeof q.questionImages === "string" ? q.questionImages : undefined}
-                                    label="Upload Question Image"
-                                    allowedTypes={["image/png", "image/jpeg"]}
-                                    maxSize={2 * 1024 * 1024}
-                                    onChange={(file) => handleQuestionImageChange(qIndex, file)}
-                                />
-                             </div>
-
-                             {/* Answers */}
-                             <div className="space-y-3 bg-[#e2e6e4] p-4 rounded-lg">
-                                <Label className="text-[#3f4441] font-semibold block mb-2">Answers</Label>
-                                {q.answers.map((a, aIndex) => (
-                                    <div key={aIndex} className="flex items-center gap-3">
-                                        <Input
-                                            value={a.text}
-                                            onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
-                                            placeholder={`Option ${aIndex + 1}`}
-                                            className="bg-white border-gray-300 text-[#3f4441]"
-                                        />
-                                        <RadioGroup
-                                            value={q.answers.findIndex(ans => ans.isCorrect).toString()}
-                                            onValueChange={(val) => handleCorrectAnswer(qIndex, Number(val))}
-                                        >
-                                            <div className="flex items-center space-x-2">
-                                                <RadioGroupItem value={aIndex.toString()} id={`q${qIndex}-a${aIndex}`} className="border-[#3f4441] text-[#3f4441]" />
-                                            </div>
-                                        </RadioGroup>
+                                {mapId === map.id && (
+                                  <div className="absolute inset-0 bg-[#c9a961]/20 flex items-center justify-center">
+                                    <div className="bg-black/70 rounded-full p-2 backdrop-blur-sm">
+                                      <Sparkles size={20} className="text-[#c9a961]" />
                                     </div>
-                                ))}
-                             </div>
+                                  </div>
+                                )}
+                              </div>
+                              <div className={`p-3 text-center font-medium text-sm transition-colors ${
+                                mapId === map.id
+                                  ? "bg-[#c9a961]/20 text-[#c9a961]"
+                                  : "bg-black/40 text-gray-400 group-hover:bg-[#c9a961]/10"
+                              }`}>
+                                {map.name}
+                              </div>
+                            </button>
+                          ))}
                         </div>
-                    ))}
+                      </div>
+                    )}
+                  </div>
+                  {formErrors["mapId"] && (
+                    <p className="text-red-400 text-sm flex items-center gap-1">
+                      <span>⚠</span> {formErrors["mapId"]}
+                    </p>
+                  )}
                 </div>
 
-                <hr className="my-8 border-[#3f4441]/20" />
-
-                {/* Section: Settings */}
-                <div className="space-y-6">
-                    <h2 className="font-gothic text-3xl text-[#3f4441]">Game Settings</h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="flex justify-between items-center p-4 bg-[#f0f2f1] rounded-xl border border-[#d1d6d4]">
-                            <div>
-                                <Label className="text-[#3f4441] font-bold">Shuffle Questions</Label>
-                                <p className="text-xs text-gray-600">Randomize order</p>
-                            </div>
-                            <Switch 
-                                checked={settings.isQuestionRandomized}
-                                onCheckedChange={(val) => setSettings(p => ({...p, isQuestionRandomized: val}))}
-                                className="data-[state=checked]:bg-[#c9a961]"
-                            />
-                        </div>
-
-                        <div className="flex justify-between items-center p-4 bg-[#f0f2f1] rounded-xl border border-[#d1d6d4]">
-                            <div>
-                                <Label className="text-[#3f4441] font-bold">Shuffle Answers</Label>
-                                <p className="text-xs text-gray-600">Randomize options</p>
-                            </div>
-                            <Switch 
-                                checked={settings.isAnswerRandomized}
-                                onCheckedChange={(val) => setSettings(p => ({...p, isAnswerRandomized: val}))}
-                                className="data-[state=checked]:bg-[#c9a961]"
-                            />
-                        </div>
-                    </div>
-
-                    <div className="p-4 bg-[#f0f2f1] rounded-xl border border-[#d1d6d4]">
-                        <Label className="text-[#3f4441] font-bold mb-2 block">Timer (Minutes)</Label>
-                        <Input
-                            type="number"
-                            value={String(settings.countdownMinutes)}
-                            onChange={(e) => {
-                                const val = Number(e.target.value);
-                                if(val >= 1 && val <= 60) setSettings(p => ({...p, countdownMinutes: val}));
-                            }}
-                            className="bg-white border-gray-300 text-[#3f4441]"
-                        />
-                    </div>
+                <div className="space-y-3">
+                  <Dropzone
+                    required
+                    defaultValue={thumbnailPreview ?? undefined}
+                    label="Thumbnail Image"
+                    allowedTypes={["image/png", "image/jpeg"]}
+                    maxSize={2 * 1024 * 1024}
+                    onChange={handleThumbnailChange}
+                  />
+                  {formErrors["thumbnail"] && (
+                    <p className="text-red-400 text-sm flex items-center gap-1">
+                      <span>⚠</span> {formErrors["thumbnail"]}
+                    </p>
+                  )}
                 </div>
-
-                {/* Section: Actions */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-end mt-10 pt-6 border-t border-[#3f4441]/20">
-                     <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                            <Button variant="outline" size="lg" className="border-[#3f4441] text-[#3f4441] hover:bg-[#3f4441] hover:text-white rounded-xl">
-                                <X size={18} className="mr-2" /> Cancel
-                            </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent className="bg-[#f0f2f1] border border-[#3f4441]">
-                            <AlertDialogHeader>
-                                <AlertDialogTitle className="text-[#3f4441] font-gothic text-2xl">Discard Changes?</AlertDialogTitle>
-                                <AlertDialogDescription className="text-gray-600">
-                                    Are you sure? All modifications will be lost.
-                                </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                                <AlertDialogCancel className="text-[#3f4441]">Keep Editing</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => navigate("/my-projects")} className="bg-red-600 hover:bg-red-700 text-white">
-                                    Discard
-                                </AlertDialogAction>
-                            </AlertDialogFooter>
-                        </AlertDialogContent>
-                     </AlertDialog>
-
-                    <Button 
-                        onClick={handleSaveDraft}
-                        size="lg"
-                        className="bg-gray-600 hover:bg-gray-700 text-white font-semibold rounded-xl border border-gray-500 transition-all"
-                    >
-                        <SaveIcon size={18} className="mr-2" /> Save Draft
-                    </Button>
-
-                    <Button 
-                        onClick={handleSubmit}
-                        size="lg"
-                        className="bg-[#3f4441] hover:bg-[#2a2e2c] text-[#c9a961] font-bold rounded-xl shadow-lg hover:shadow-xl transition-all"
-                    >
-                        <SaveIcon size={18} className="mr-2" /> Update Maze
-                    </Button>
-                </div>
-
+              </div>
             </div>
+          </div>
+
+          {/* Questions Section Header */}
+          <div className="flex justify-between items-center mt-10 mb-6 backdrop-blur-xl bg-black/50 rounded-2xl p-6 border border-gray-700/30">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-br from-[#c9a961] to-[#a08347] p-3 rounded-xl shadow-lg">
+                <Typography variant="p" className="text-gray-900 font-bold text-sm">
+                  {questions.length}
+                </Typography>
+              </div>
+              <div>
+                <h3 className="font-gothic text-2xl text-[#c9a961] tracking-wide">Challenges</h3>
+                <p className="text-gray-500 text-sm">Maximum 10 questions</p>
+              </div>
+            </div>
+            <Button 
+              onClick={addQuestion}
+              disabled={questions.length >= 10}
+              className="bg-gradient-to-r from-[#c9a961] to-[#a08347] hover:from-[#a08347] hover:to-[#c9a961] text-gray-900 font-semibold px-6 py-3 rounded-xl transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <Plus size={18} className="mr-2" /> Add Challenge
+            </Button>
+          </div>
+
+          {/* Questions Cards */}
+          <div className="space-y-6">
+            {questions.map((q, qIndex) => (
+              <div
+                key={qIndex}
+                className="backdrop-blur-2xl bg-black/60 rounded-3xl border border-gray-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] p-8 space-y-6 hover:border-[#c9a961]/30 transition-all duration-300"
+              >
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-gradient-to-br from-[#c9a961] to-[#a08347] text-gray-900 font-bold px-4 py-2 rounded-xl shadow-lg">
+                      Q{qIndex + 1}
+                    </div>
+                    <Typography variant="p" className="text-gray-300 font-semibold">
+                      Challenge {qIndex + 1}
+                    </Typography>
+                  </div>
+                  <button
+                    onClick={() => removeQuestion(qIndex)}
+                    disabled={questions.length === 1}
+                    className={`p-2 rounded-lg transition-all ${
+                      questions.length === 1
+                        ? "text-gray-600 cursor-not-allowed"
+                        : "text-[#c9a961] hover:bg-[#c9a961]/10"
+                    }`}
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <Label className="text-gray-400 font-medium">
+                    Question <span className="text-[#c9a961]">*</span>
+                  </Label>
+                  <textarea
+                    placeholder="What mystery lies ahead..."
+                    className="w-full bg-black/70 border border-gray-700/50 text-gray-300 rounded-xl px-4 py-4 placeholder:text-gray-600 focus:border-[#c9a961]/50 transition-all resize-none"
+                    rows={3}
+                    value={q.questionText}
+                    onChange={(e) => handleQuestionTextChange(qIndex, e.target.value)}
+                  />
+                  {formErrors[`questions.${qIndex}.questionText`] && (
+                    <p className="text-red-400 text-sm flex items-center gap-1">
+                      <span>⚠</span> {formErrors[`questions.${qIndex}.questionText`]}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-4 bg-black/40 p-6 rounded-2xl border border-gray-700/30">
+                  <Label className="text-gray-400 font-medium flex items-center gap-2">
+                    Answer Options <span className="text-[#c9a961]">*</span>
+                    <span className="text-xs text-gray-600">(Mark the correct answer)</span>
+                  </Label>
+                  <div className="space-y-3">
+                    {q.answers.map((a, aIndex) => (
+                      <div key={aIndex} className="flex items-center gap-3">
+                        <Input
+                          placeholder={`Option ${aIndex + 1}...`}
+                          className="flex-1 bg-black/70 border-gray-700/50 text-gray-300 rounded-xl px-4 py-3 placeholder:text-gray-600 focus:border-[#c9a961]/50"
+                          value={a.text}
+                          onChange={(e) => handleAnswerChange(qIndex, aIndex, e.target.value)}
+                        />
+                        <RadioGroup
+                          value={q.answers.findIndex((a) => a.isCorrect).toString()}
+                          onValueChange={(val) => handleCorrectAnswer(qIndex, Number(val))}
+                        >
+                          <div className="flex items-center gap-2 bg-black/50 px-4 py-3 rounded-xl border border-gray-700/30">
+                            <RadioGroupItem value={aIndex.toString()} />
+                            <Label className="font-medium text-[#c9a961] cursor-pointer text-sm">
+                              Correct
+                            </Label>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Settings */}
+          <div className="backdrop-blur-2xl bg-black/60 rounded-3xl border border-gray-700/50 shadow-[0_8px_32px_0_rgba(0,0,0,0.8)] p-10 space-y-8 mt-8">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="bg-gradient-to-br from-[#c9a961] to-[#a08347] p-2.5 rounded-xl shadow-lg">
+                <Typography variant="p" className="text-gray-900 font-bold text-lg">⚙️</Typography>
+              </div>
+              <h3 className="font-gothic text-3xl text-[#c9a961] tracking-wide">Game Settings</h3>
+            </div>
+
+            <div className="space-y-6">
+              <div className="flex justify-between items-center p-5 bg-black/40 rounded-2xl hover:bg-black/50 transition-all border border-gray-700/30">
+                <div>
+                  <Label className="text-gray-300 font-semibold text-base">Shuffle Questions</Label>
+                  <Typography variant="small" className="text-gray-500 mt-1">
+                    Randomize challenge order
+                  </Typography>
+                </div>
+                <Switch
+                  checked={settings.isQuestionRandomized}
+                  onCheckedChange={(val) =>
+                    setSettings((prev) => ({ ...prev, isQuestionRandomized: val }))
+                  }
+                />
+              </div>
+
+              <div className="flex justify-between items-center p-5 bg-black/40 rounded-2xl hover:bg-black/50 transition-all border border-gray-700/30">
+                <div>
+                  <Label className="text-gray-300 font-semibold text-base">Shuffle Answers</Label>
+                  <Typography variant="small" className="text-gray-500 mt-1">
+                    Randomize answer options
+                  </Typography>
+                </div>
+                <Switch
+                  checked={settings.isAnswerRandomized}
+                  onCheckedChange={(val) =>
+                    setSettings((prev) => ({ ...prev, isAnswerRandomized: val }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-3">
+                <Label className="text-gray-400 font-medium text-base">
+                  Countdown Timer (Minutes) <span className="text-[#c9a961]">*</span>
+                </Label>
+                <Input
+                  type="number"
+                  placeholder="5"
+                  className="bg-black/70 border-gray-700/50 text-gray-300 rounded-xl px-4 py-4 focus:border-[#c9a961]/50"
+                  value={String(settings.countdownMinutes)}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val >= 1 && val <= 60) {
+                      setSettings((prev) => ({ ...prev, countdownMinutes: val }));
+                    }
+                  }}
+                />
+                <Typography variant="small" className="text-gray-500">
+                  Set between 1-60 minutes
+                </Typography>   
+                {formErrors["settings.countdownMinutes"] && (
+                  <p className="text-red-400 text-sm flex items-center gap-1">
+                    <span>⚠</span> {formErrors["settings.countdownMinutes"]}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-end mt-10">
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  size="lg"
+                  className="border-2 border-gray-700 text-gray-400 bg-black/50 hover:bg-black/70 hover:text-gray-300 backdrop-blur-xl transition-all rounded-xl font-semibold px-8 py-6"
+                >
+                  <X size={18} className="mr-2" /> Cancel
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="rounded-3xl backdrop-blur-2xl bg-black/80 border-2 border-gray-700/50">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="font-gothic text-2xl text-[#c9a961]">
+                    Abandon Changes?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-gray-400 text-base">
+                    All unsaved modifications will be lost to the shadows. Are you certain?
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="rounded-xl bg-black/50 text-gray-400 border-gray-700">
+                    Continue Editing
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={() => navigate("/my-projects")}
+                    className="bg-gradient-to-r from-[#c9a961] to-[#a08347] hover:from-[#a08347] hover:to-[#c9a961] text-gray-900 rounded-xl"
+                  >
+                    Abandon Changes
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+
+            <Button
+              size="lg"
+              onClick={handleSaveDraft}
+              className="bg-gray-700 hover:bg-gray-600 text-white font-semibold px-8 py-6 rounded-xl transition-all duration-300 border border-gray-600"
+            >
+              <SaveIcon size={18} className="mr-2" /> Save Draft
+            </Button>
+
+            <Button
+              size="lg"
+              onClick={handleSubmit}
+              className="bg-gradient-to-r from-[#c9a961] to-[#a08347] hover:from-[#a08347] hover:to-[#c9a961] text-gray-900 font-bold px-10 py-6 rounded-xl transition-all duration-300 shadow-[0_0_30px_rgba(201,169,97,0.3)] hover:shadow-[0_0_40px_rgba(201,169,97,0.5)] transform hover:scale-105"
+            >
+              <SaveIcon size={18} className="mr-2" /> Update Maze
+            </Button>
+          </div>
         </div>
       </div>
     </div>

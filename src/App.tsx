@@ -32,7 +32,7 @@ function App() {
           <Route path="/create-quiz" element={<CreateQuiz />} />
           <Route path="/quiz/edit/:id" element={<EditQuiz />} />
           <Route path="/create-maze-chase" element={<CreateMazeChase/>} />
-          <Route path="/maze-chase/edit/:id" element={<EditMazeChase/>} />
+          <Route path="/maze-chase/edit" element={<EditMazeChase/>} />
         </Route>
       </Routes>
     </>
