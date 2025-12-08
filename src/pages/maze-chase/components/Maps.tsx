@@ -14,55 +14,127 @@ const TILE_SIZE = 18;
 
 type Direction = "up" | "down" | "left" | "right";
 
+export interface AnswerTile {
+  answer_text: string;
+  answer_index: number;
+  tileX: number;
+  tileY: number;
+}
+
 interface MapsProps {
   mapId: string | number;
   controlDirection?: Direction | null; // dari Game.tsx (arrow button)
+  isPaused?: boolean; // pause state untuk stop NPC dan player movement
+  answers?: { answer_text: string; answer_index: number }[]; // jawaban dari API
+  onAnswerSelected?: (answerIndex: number) => void; // callback ketika player pilih jawaban
 }
 
 // ========== MAZE ==========
 // 0 = jalan, selain 0 = tembok (bisa kamu custom jenisnya)
 const MAP_LAYOUTS: Record<string, number[][]> = {
-  "1": 
+  "1":
     // PASTIKAN nanti semua baris panjangnya sama
 
-[
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,1,0,0,1,1,1,1,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,1,0,0,0,0,1],
-[1,1,1,1,1,1,0,0,1,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,1,0,0,1,0,0,1,1,1,1,1,1],
-[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1,1,1,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,0,0,1],
-[1,0,0,1,1,1,1,1,1,0,0,1,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,1,1,1,1,1,1,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,1,1,1,1,0,0,1,0,0,0,0,0,0,0,1,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-[1,0,0,1,1,1,1,1,1,0,0,1,0,0,1,0,0,1,0,0,0,1,0,0,0,0,0,1,1,1,0,0,1,0,0,1],
-[1,0,0,1,0,0,0,0,1,0,0,1,0,0,1,0,0,1,0,0,0,1,1,1,1,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,0,1,0,0,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,0,1,1,1,1,1,1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1,1,1,1,1,1,0,0,1],
-[1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,1,1,1,0,0,1,1,1,1,1,0,0,1,0,0,0,0,1,0,0,1], 
-[1,0,0,0,0,0,0,0,1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,0,0,0,0,1,0,0,1],
-[1,1,1,1,1,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,1,0,0,1,0,0,1,1,1,0,0,1],
-[1,0,0,0,0,1,1,1,1,0,0,1,1,1,1,0,0,1,0,0,1,1,1,1,1,0,0,1,1,1,1,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
-
-],
+    [
+      [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0,
+        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0,
+        0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+        1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1,
+      ],
+      [
+        1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0,
+        1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1,
+        1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+      ],
+      [
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+      ],
+    ],
   "2": [
-    [1,1,1,1,1,1,1,1],
-    [1,0,0,0,1,0,0,1],
-    [1,0,1,0,0,1,0,1],
-    [1,0,1,1,1,1,0,1],
-    [1,0,0,0,0,0,0,1],
-    [1,1,1,1,1,1,1,1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 1, 0, 0, 1],
+    [1, 0, 1, 0, 0, 1, 0, 1],
+    [1, 0, 1, 1, 1, 1, 0, 1],
+    [1, 0, 0, 0, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1],
   ],
   "3": [
-    [1,1,1,1,1],
-    [1,0,0,1,1],
-    [1,1,0,0,1],
-    [1,0,0,0,1],
-    [1,1,1,1,1],
+    [1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 1],
+    [1, 1, 0, 0, 1],
+    [1, 0, 0, 0, 1],
+    [1, 1, 1, 1, 1],
   ],
 };
 
@@ -106,7 +178,13 @@ interface Entity {
 
 // ========== MAIN COMPONENT ==========
 
-const Maps = ({ mapId, controlDirection }: MapsProps) => {
+const Maps = ({
+  mapId,
+  controlDirection,
+  isPaused = false,
+  answers = [],
+  onAnswerSelected,
+}: MapsProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const maze = MAP_LAYOUTS[String(mapId)] ?? MAP_LAYOUTS["1"];
   const texture = MAP_TEXTURES[String(mapId)] ?? MAP_TEXTURES["1"];
@@ -114,6 +192,7 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
   // Refs for game state
   const playerRef = useRef<Entity | null>(null);
   const npcsRef = useRef<Entity[]>([]);
+  const answerTilesRef = useRef<AnswerTile[]>([]);
   const keyboardDirRef = useRef<Direction | null>(null);
   const externalDirRef = useRef<Direction | null>(null);
   const requestIdRef = useRef<number | null>(null);
@@ -183,6 +262,22 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
     }
     npcsRef.current = npcs;
 
+    // init Answer Tiles
+    const answerTiles: AnswerTile[] = [];
+    if (answers && answers.length > 0) {
+      for (let i = 0; i < answers.length && walkableTiles.length > 0; i++) {
+        const idx = Math.floor(Math.random() * walkableTiles.length);
+        const spawn = walkableTiles.splice(idx, 1)[0];
+        answerTiles.push({
+          answer_text: answers[i].answer_text,
+          answer_index: answers[i].answer_index,
+          tileX: spawn.x,
+          tileY: spawn.y,
+        });
+      }
+    }
+    answerTilesRef.current = answerTiles;
+
     // keyboard controls
     const onKeyDown = (e: KeyboardEvent) => {
       let dir: Direction | null = null;
@@ -211,7 +306,11 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
       }
     };
 
-    const tryStartMove = (entity: Entity, dir: Direction, speedTilesPerSec: number) => {
+    const tryStartMove = (
+      entity: Entity,
+      dir: Direction,
+      speedTilesPerSec: number,
+    ) => {
       const { dx, dy } = getDelta(dir);
       const targetX = entity.tileX + dx;
       const targetY = entity.tileY + dy;
@@ -255,10 +354,18 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
       const dt = (time - lastTimeRef.current) / 1000; // in seconds
       lastTimeRef.current = time;
 
+      // If paused, skip update logic but continue rendering
+      if (isPaused) {
+        lastTimeRef.current = time;
+        requestIdRef.current = requestAnimationFrame(loop);
+        return;
+      }
+
       // --- UPDATE PLAYER ---
       if (playerRef.current) {
         const p = playerRef.current;
-        const wantedDir = externalDirRef.current || keyboardDirRef.current || p.dir;
+        const wantedDir =
+          externalDirRef.current || keyboardDirRef.current || p.dir;
 
         if (!p.moving && wantedDir) {
           tryStartMove(p, wantedDir, 5);
@@ -272,6 +379,21 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
             p.tileY += dy;
             p.moving = false;
             p.moveProgress = 0;
+
+            // Check collision with answer tiles
+            const answerTiles = answerTilesRef.current;
+            for (let i = answerTiles.length - 1; i >= 0; i--) {
+              const tile = answerTiles[i];
+              if (tile.tileX === p.tileX && tile.tileY === p.tileY) {
+                // Player picked up this answer
+                if (onAnswerSelected) {
+                  onAnswerSelected(tile.answer_index);
+                }
+                // Remove the answer tile from array
+                answerTiles.splice(i, 1);
+                break;
+              }
+            }
           }
         }
 
@@ -299,8 +421,7 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
               const tx = npc.tileX + dx;
               const ty = npc.tileY + dy;
               if (isWalkable(maze, tx, ty)) {
-                const newDist =
-                  Math.abs(tx - p.tileX) + Math.abs(ty - p.tileY);
+                const newDist = Math.abs(tx - p.tileX) + Math.abs(ty - p.tileY);
                 if (newDist < bestDist) {
                   bestDist = newDist;
                   bestDir = dir;
@@ -366,15 +487,43 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
         }
       }
 
+      // draw Answer Tiles
+      const answerTiles = answerTilesRef.current;
+      for (const answerTile of answerTiles) {
+        const x = (answerTile.tileX + 0.5) * TILE_SIZE;
+        const y = (answerTile.tileY + 0.5) * TILE_SIZE;
+        const size = TILE_SIZE * 0.9;
+
+        // Background box untuk answer
+        ctx.fillStyle = "rgba(255, 215, 0, 0.8)"; // Gold color
+        ctx.fillRect(x - size / 2, y - size / 2, size, size);
+
+        // Border
+        ctx.strokeStyle = "rgba(139, 69, 19, 0.9)"; // Brown border
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - size / 2, y - size / 2, size, size);
+
+        // Text
+        ctx.fillStyle = "rgba(0, 0, 0, 1)";
+        ctx.font = "bold 10px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // Truncate text jika terlalu panjang
+        let displayText = answerTile.answer_text;
+        if (displayText.length > 8) {
+          displayText = displayText.substring(0, 7) + "...";
+        }
+        ctx.fillText(displayText, x, y);
+      }
+
       // draw NPCs
       const npcs = npcsRef.current;
       for (const npc of npcs) {
         const { dx, dy } = getDelta(npc.dir);
         const off = npc.moving ? npc.moveProgress : 0;
-        const x =
-          (npc.tileX + dx * off + 0.5) * TILE_SIZE; // center
-        const y =
-          (npc.tileY + dy * off + 0.5) * TILE_SIZE;
+        const x = (npc.tileX + dx * off + 0.5) * TILE_SIZE; // center
+        const y = (npc.tileY + dy * off + 0.5) * TILE_SIZE;
         const size = TILE_SIZE * 0.8;
 
         // sementara: kotak merah
@@ -409,14 +558,22 @@ const Maps = ({ mapId, controlDirection }: MapsProps) => {
       window.removeEventListener("keydown", onKeyDown);
       if (requestIdRef.current) cancelAnimationFrame(requestIdRef.current);
     };
-  }, [mapId, texture.wall, texture.floor, maze]);
+  }, [
+    mapId,
+    texture.wall,
+    texture.floor,
+    maze,
+    isPaused,
+    answers,
+    onAnswerSelected,
+  ]);
 
   return (
     <div className="flex justify-center items-center w-full h-full">
       <canvas
         ref={canvasRef}
         className="border border-gray-500 max-w-full h-auto"
-        style={{ imageRendering: "pixelated" as any }}
+        style={{ imageRendering: "pixelated" as unknown }}
       />
     </div>
   );
