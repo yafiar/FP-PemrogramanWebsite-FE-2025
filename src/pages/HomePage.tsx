@@ -186,7 +186,11 @@ export default function HomePage() {
 
   const GameCard = ({ game }: { game: Game }) => {
     const handlePlayGame = () => {
-      window.location.href = `/anagram/play/${game.id}`;
+      if (game.game_template_slug === "quiz") {
+        window.location.href = `/quiz/play/${game.id}`;
+      } else {
+        window.location.href = `/anagram/play/${game.id}`;
+      }
     };
 
     return (

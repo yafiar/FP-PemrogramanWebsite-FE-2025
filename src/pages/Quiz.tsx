@@ -58,7 +58,9 @@ function Quiz() {
     const fetchQuiz = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/api/game/quiz/${id}/play/public`);
+        const response = await api.get(
+          `/api/game/game-type/quiz/${id}/play/public`,
+        );
         setQuiz(response.data.data);
       } catch (err) {
         setError("Failed to load quiz.");
