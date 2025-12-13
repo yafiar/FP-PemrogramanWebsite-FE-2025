@@ -9,7 +9,16 @@ const api: AxiosInstance = axios.create({
 api.interceptors.request.use(
   (config) => {
     const token = useAuthStore.getState().token;
-    if (token && config.headers) {
+    const url = config.url || "";
+    const isPublicRequest = [
+      "/api/game", // list games (public, optional auth)
+      "/api/game/template", // templates are public
+      "/play/public", // public play endpoints
+      "/leaderboard",
+      "/check",
+    ].some((p) => url.includes(p));
+
+    if (!isPublicRequest && token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -22,7 +31,13 @@ api.interceptors.response.use(
   (err) => {
     if (err.response?.status === 401) {
       // Don't redirect to login for public endpoints
-      const publicEndpoints = ["/check", "/play/public", "/leaderboard"];
+      const publicEndpoints = [
+        "/check",
+        "/play/public",
+        "/leaderboard",
+        "/api/game", // game list and user games use optional auth
+        "/template", // game templates are public
+      ];
       const isPublicEndpoint = publicEndpoints.some((endpoint) =>
         err.config?.url?.includes(endpoint),
       );
